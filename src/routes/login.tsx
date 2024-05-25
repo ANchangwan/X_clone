@@ -1,5 +1,4 @@
 import { useState } from "react";
-import styled from "styled-components";
 import { auth } from "../firebase";
 import { useNavigate, Link } from "react-router-dom";
 import { FirebaseError } from "firebase/app";
@@ -12,14 +11,15 @@ import {
   Wrapper,
   Form,
 } from "../components/auth-components";
+import GithubButton from "../components/github-button";
 
 export default function CreateAccount() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const {
       target: { name, value },
@@ -76,6 +76,7 @@ export default function CreateAccount() {
       <Switcher>
         Don't have an account?<Link to="/create-account"> Create one</Link>
       </Switcher>
+      <GithubButton />
     </Wrapper>
   );
 }
