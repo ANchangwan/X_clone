@@ -12,6 +12,7 @@ import "./firebase";
 import { auth } from "./firebase";
 import styled from "styled-components";
 import ProtectedRoute from "./components/protected-route";
+import FindPassword from "./components/find-user";
 
 const router = createBrowserRouter([
   {
@@ -39,6 +40,10 @@ const router = createBrowserRouter([
   {
     path: "/create-account",
     element: <CreateAccount />,
+  },
+  {
+    path: "/find-password",
+    element: <FindPassword />,
   },
 ]);
 
