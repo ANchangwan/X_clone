@@ -2,7 +2,10 @@ import { useState } from "react";
 import { auth } from "../firebase";
 import { useNavigate, Link } from "react-router-dom";
 import { FirebaseError } from "firebase/app";
-import { sendPasswordResetEmail } from "firebase/auth";
+import {
+  sendPasswordResetEmail,
+  fetchSignInMethodsForEmail,
+} from "firebase/auth";
 import {
   Error,
   Input,
@@ -34,15 +37,17 @@ export default function FindPassword() {
     if (isLoading || email === "") return;
     try {
       setIsLoading(true);
+      const existEmail = await fetchSignInMethodsForEmail(auth, email);
+      if (existEmail.length === 0) {
+        alert("이메일 없음");
+        return;
+      }
       await sendPasswordResetEmail(auth, email);
-      alert("Email Sent! Login with new Password!");
       navigate("/login");
     } catch (e: any) {
-      alert("메일을 확인해주세요");
       if (e instanceof FirebaseError) {
         setError(e.message);
       }
-      return e;
     } finally {
       setIsLoading(false);
     }
