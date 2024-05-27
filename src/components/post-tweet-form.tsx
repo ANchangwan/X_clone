@@ -1,7 +1,8 @@
 import { styled } from "styled-components";
 import { useState } from "react";
-import { addDoc, collection } from "firebase/firestore";
-import { auth, db } from "../firebase";
+import { addDoc, collection, updateDoc } from "firebase/firestore";
+import { auth, db, storage } from "../firebase";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 const Form = styled.form`
   display: flex;
@@ -67,6 +68,10 @@ export default function PostTweetForm() {
   };
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { files } = e.target;
+    const oneMb = 1 * 1024 * 1024;
+    if (files && files[0].size < oneMb) {
+      alert("용량이 큽니다. 1MB크기로 업로드해주세요!!");
+    }
     if (files && files.length >= 1) {
       setFile(files[0]);
     }
@@ -75,15 +80,28 @@ export default function PostTweetForm() {
     e.preventDefault();
     const user = auth.currentUser;
     if (!user || isLoading || tweet === "" || tweet.length > 180) return;
-    console.log(tweet);
+
     try {
       setLoading(true);
-      await addDoc(collection(db, "tweets"), {
+      const doc = await addDoc(collection(db, "tweets"), {
         tweet,
         createdAt: Date.now(),
         username: user.displayName || "Anonymous",
         userId: user.uid,
       });
+      if (file) {
+        const locationRef = ref(
+          storage,
+          `tweets/${user.uid}-${user.displayName}/${doc.id}`
+        );
+        const result = await uploadBytes(locationRef, file);
+        const url = await getDownloadURL(result.ref);
+        await updateDoc(doc, {
+          photo: url,
+        });
+        setTweet("");
+        setFile(null);
+      }
     } catch (e) {
       console.log(e);
     } finally {
@@ -101,7 +119,7 @@ export default function PostTweetForm() {
         placeholder="What is happening"
       />
       <AttachFileButton htmlFor="file">
-        {file ? "Photo added" : "Add photo"}
+        {file ? "✅Photo added" : "Add photo"}
       </AttachFileButton>
       <AttachFileInput
         onChange={onFileChange}
