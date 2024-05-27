@@ -69,8 +69,9 @@ export default function PostTweetForm() {
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { files } = e.target;
     const oneMb = 1 * 1024 * 1024;
-    if (files && files[0].size < oneMb) {
+    if (files && files[0].size > oneMb) {
       alert("용량이 큽니다. 1MB크기로 업로드해주세요!!");
+      return;
     }
     if (files && files.length >= 1) {
       setFile(files[0]);
@@ -95,6 +96,7 @@ export default function PostTweetForm() {
           `tweets/${user.uid}-${user.displayName}/${doc.id}`
         );
         const result = await uploadBytes(locationRef, file);
+        console.log(result.ref);
         const url = await getDownloadURL(result.ref);
         await updateDoc(doc, {
           photo: url,
