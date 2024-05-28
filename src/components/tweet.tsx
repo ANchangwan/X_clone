@@ -3,7 +3,7 @@ import { ITweet } from "./timeline";
 
 const Wrapper = styled.div`
   display: grid;
-  grid-template-columns: 3fr 1fr;
+  grid-template-columns: 4fr 1fr;
   padding: 20px;
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 15px;
@@ -34,11 +34,7 @@ export default function Tweet({ username, photo, tweet }: ITweet) {
         <Username>{username}</Username>
         <Payload>{tweet}</Payload>
       </Column>
-      {photo ? (
-        <Column>
-          <Photo src={photo}></Photo>
-        </Column>
-      ) : null}
+      <Column>{photo ? <Photo src={photo}></Photo> : null}</Column>
     </Wrapper>
   );
 }
