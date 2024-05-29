@@ -2,7 +2,12 @@ import { styled } from "styled-components";
 import { ITweet } from "./timeline";
 import { auth, db, storage } from "../firebase";
 import { deleteDoc, doc, collection, updateDoc } from "firebase/firestore";
-import { deleteObject, ref } from "firebase/storage";
+import {
+  deleteObject,
+  getDownloadURL,
+  ref,
+  uploadBytes,
+} from "firebase/storage";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -53,10 +58,15 @@ const ModifyPayload = styled.textarea`
 const Modify = styled.input`
   background-color: #1d9bf9;
   padding: 5px 10px;
-  border-radius: 15px;
+  border-radius: 5px;
   border: none;
   font-size: 16px;
   color: white;
+`;
+
+const ModifyPhoto = styled.label``;
+const ModifyInput = styled.input`
+  display: none;
 `;
 
 const Form = styled.form``;
@@ -97,7 +107,10 @@ export default function Tweet({ username, photo, tweet, userId, id }: ITweet) {
     if (!user || tweet.length > 180) return;
     try {
       const modifyText = await doc(db, "tweets", id);
-      await updateDoc(modifyText, { tweet: isTweet });
+      const ok = confirm("수정하시겠습니까?");
+      if (ok) {
+        await updateDoc(modifyText, { tweet: isTweet });
+      }
     } catch (e) {
       console.log(e);
     } finally {
@@ -110,6 +123,26 @@ export default function Tweet({ username, photo, tweet, userId, id }: ITweet) {
   };
   const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setIsTweet(e.target.value);
+  };
+
+  const changePhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { files } = e.target;
+    const ok = confirm("변경할건가요?");
+    if (!ok || user?.uid !== userId) return;
+    try {
+      const photoRef = ref(storage, `tweets/${user.uid}/${id}`);
+      await deleteObject(photoRef);
+      if (files && files.length >= 1) {
+        const photoDoc = doc(db, "tweets", id);
+        const result = await uploadBytes(photoRef, files[0]);
+        const url = await getDownloadURL(result.ref);
+        await updateDoc(photoDoc, {
+          photo: url,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const onDelete = async () => {
@@ -145,7 +178,21 @@ export default function Tweet({ username, photo, tweet, userId, id }: ITweet) {
           <EditButton onClick={onEdit}>Edit</EditButton>
         ) : null}
       </Column>
-      <Column>{photo ? <Photo src={photo}></Photo> : null}</Column>
+      {isEdit ? (
+        <Column>{photo ? <Photo src={photo}></Photo> : null}</Column>
+      ) : (
+        <>
+          <ModifyPhoto htmlFor="photo">
+            <Column>{photo ? <Photo src={photo}></Photo> : null}</Column>
+          </ModifyPhoto>
+          <ModifyInput
+            onChange={changePhoto}
+            type="file"
+            id="photo"
+            accept="/image/*"
+          ></ModifyInput>
+        </>
+      )}
     </Wrapper>
   );
 }
