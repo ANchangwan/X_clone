@@ -2,7 +2,6 @@ import { styled } from "styled-components";
 import {
   GithubAuthProvider,
   signInWithPopup,
-  signInWithRedirect,
 } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";

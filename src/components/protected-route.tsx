@@ -1,4 +1,4 @@
-import { ReactComponentElement, ReactNode } from "react";
+import {  ReactNode } from "react";
 import { auth } from "../firebase";
 import { Navigate } from "react-router-dom";
 
